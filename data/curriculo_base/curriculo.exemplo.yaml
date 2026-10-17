@@ -1,0 +1,38 @@
+# Copie para curriculo.yaml e preencha. A IA só usa o que estiver aqui.
+nome: ""
+titulo: ""
+contato:
+  email: ""
+  telefone: ""
+  linkedin: ""
+  github: ""
+  portfolio: ""
+  localizacao: ""
+resumo: ""
+experiencias:
+  - cargo: ""
+    empresa: ""
+    inicio: "AAAA-MM"
+    fim: "atual"
+    local: ""
+    conquistas:
+      - ""
+projetos:
+  - nome: ""
+    contexto: ""
+    ano: "AAAA"
+    destaques:
+      - ""
+formacao:
+  - curso: ""
+    instituicao: ""
+    conclusao: "AAAA"
+habilidades:
+  tecnicas: []
+  ferramentas: []
+idiomas:
+  - idioma: ""
+    nivel: ""
+certificacoes: []
+# Plano de estudo, não é experiência.
+estudando: []

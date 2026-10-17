@@ -1,0 +1,34 @@
+# Segredos e credenciais
+.env
+credentials.json
+token.json
+
+# Dados pessoais e gerados
+data/vagas/*
+!data/vagas/.gitkeep
+output/*
+!output/.gitkeep
+*.db
+*.sqlite
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Perfil do navegador (Playwright)
+.browser-profile/
+
+# Currículo pessoal (PT, EN e qualquer cópia). Só o exemplo é versionado.
+data/curriculo_base/*
+!data/curriculo_base/.gitkeep
+!data/curriculo_base/curriculo.exemplo.yaml
+*.pdf
+*.docx
+
+# Contratos e material de clientes
+contratos/
+clientes/
