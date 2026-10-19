@@ -47,6 +47,10 @@
   .msg { font-size: 13.5px; } .msg.erro { color: var(--erro); } .msg.ok { color: var(--ok); }
   .vazio { text-align: center; color: var(--suave); padding: 40px 0; }
   details summary { cursor: pointer; color: var(--suave); font-size: 13.5px; margin-top: 8px; }
+  .analise { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--bg); font-size: 13.5px; }
+  .barra { height: 6px; border-radius: 3px; background: var(--borda); margin: 4px 0 8px; overflow: hidden; }
+  .barra i { display: block; height: 100%; background: var(--ok); }
+  .analise ul { margin: 2px 0 6px 18px; padding: 0; }
   details p { white-space: pre-wrap; font-size: 13.5px; max-height: 240px; overflow: auto; }
 </style>
 </head>
@@ -98,6 +102,7 @@ function cartao(v) {
     ${semDesc
       ? `<textarea placeholder="1) Clique em Abrir vaga  2) Copie a descrição inteira  3) Cole aqui"></textarea>`
       : `<details><summary>Descrição (${v.descricao.length} caracteres)</summary><p>${esc(v.descricao)}</p></details>`}
+    ${analise(v.analise)}
     <div class="acoes">
       <a href="${esc(v.link)}" target="_blank" rel="noopener"><button>Abrir vaga</button></a>
       <button class="primario" data-acao="gerar">${v.pdf ? "Gerar de novo" : (semDesc ? "Salvar e gerar currículo" : "Gerar currículo")}</button>
@@ -106,6 +111,17 @@ function cartao(v) {
       ${v.status !== "descartada" ? `<button data-acao="descartada">Descartar</button>` : `<button data-acao="nova">Restaurar</button>`}
       <span class="msg"></span>
     </div></article>`;
+}
+
+function analise(a) {
+  if (!a || a.cobertura === undefined) return "";
+  const lista = (titulo, itens) => itens && itens.length ? `<b>${titulo}</b><ul>${itens.map(i => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
+  const reqs = (a.requisitos || []).map(r => `${r.nivel} — ${r.requisito}`);
+  return `<div class="analise">
+    <b>Aderência: ${esc(a.cobertura)}%</b><div class="barra"><i style="width:${Math.max(0, Math.min(100, +a.cobertura || 0))}%"></i></div>
+    ${lista("Lacunas", a.lacunas)}${lista("Preparar para a entrevista", a.entrevista)}
+    ${reqs.length ? `<details><summary>Requisito por requisito</summary><ul>${reqs.map(r => `<li>${esc(r)}</li>`).join("")}</ul></details>` : ""}
+  </div>`;
 }
 
 function atualizar(nova) { vagas = vagas.map(v => v.id === nova.id ? nova : v); desenhar(); }

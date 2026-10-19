@@ -32,7 +32,7 @@ def gerar(vaga: Vaga) -> Vaga:
     cv = adaptar(vaga)
     pdf = gerar_pdf(cv, vaga.empresa, vaga.titulo, idioma=cv.get("idioma", "pt"))
     pdf.with_suffix(".json").write_text(json.dumps(cv, ensure_ascii=False, indent=2), encoding="utf-8")
-    vaga.status, vaga.pdf = "gerada", pdf.name
+    vaga.status, vaga.pdf, vaga.analise = "gerada", pdf.name, cv.get("analise") or {}
     return vaga
 
 

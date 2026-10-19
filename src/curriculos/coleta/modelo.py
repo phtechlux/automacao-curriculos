@@ -1,6 +1,6 @@
 import hashlib
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 
@@ -14,6 +14,7 @@ class Vaga:
     descricao: str = ""
     status: str = "nova"  # nova | gerada | candidatada | descartada
     pdf: str = ""
+    analise: dict = field(default_factory=dict)  # cobertura, requisitos, lacunas, entrevista
 
     @property
     def id(self) -> str:
