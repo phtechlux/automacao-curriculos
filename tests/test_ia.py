@@ -77,3 +77,22 @@ def test_validar_estudando_nao_vira_habilidade():
     base = {**BASE, "estudando": ["TypeScript"]}
     adaptado = {**base, "habilidades": {"tecnicas": ["TypeScript"]}}
     assert any("TypeScript" in p for p in validar(base, adaptado))
+
+
+def test_cliente_cli_monta_chamada(monkeypatch):
+    from curriculos import ia
+
+    chamada = {}
+
+    def fake_run(cmd, input, **kw):
+        chamada.update(cmd=cmd, input=input)
+        return SimpleNamespace(returncode=0, stdout='{"ok": 1}', stderr="")
+
+    monkeypatch.setattr(ia.shutil, "which", lambda _: "claude")
+    monkeypatch.setattr(ia.subprocess, "run", fake_run)
+    resp = ia.ClaudeCLI().messages.create(
+        system=[{"type": "text", "text": "REGRAS"}, {"type": "text", "text": "BASE"}],
+        messages=[{"role": "user", "content": "VAGA X"}])
+    assert resp.content[0].text == '{"ok": 1}'
+    assert chamada["cmd"][-1] == "REGRAS" and "--tools" in chamada["cmd"]
+    assert "BASE" in chamada["input"] and "VAGA X" in chamada["input"]

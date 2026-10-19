@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 Phase: 2 of 6 (Coleta)
 Plan: 0 of ? in current phase
 Status: Ready to plan
-Last activity: 2026-10-19 — arquivos do GSD criados; STAFFgo no currículo base
+Last activity: 2026-10-19 — IA via Claude Code (sem API paga) testada com vaga de exemplo → PDF
 
 Progress: [██░░░░░░░░] 17%
 
@@ -44,8 +44,6 @@ None yet.
 ### Blockers/Concerns
 
 - Phase 2 precisa de `credentials.json` do Gmail (Pedro cria no Google Cloud Console; passos em docs/setup.md)
-- Phase 3 precisa de `.env` com `ANTHROPIC_API_KEY` (créditos pré-pagos)
-- STAFFgo: Pedro precisa confirmar detalhes do login e o banco de dados
 
 ## Session Continuity
 

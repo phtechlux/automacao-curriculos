@@ -5,7 +5,10 @@
 - Executar em paralelo: o usuário configura API do Claude e Gmail enquanto os arquivos do GSD são preparados.
 - Preferência de interface: o usuário gosta de coisas **dinâmicas e interativas**. Priorizar um painel visual (ex.: dashboard web local com lista de vagas, filtros, status e botões de ação) em vez de saída só no terminal.
 
-## 1. Chave da API do Claude (.env)
+## 1. Chave da API do Claude (.env) — OPCIONAL
+Sem chave, o módulo de IA usa o Claude Code instalado (`claude -p`, plano do usuário, sem custo extra). Testado em 19/10: ~45 s por vaga.
+Só criar a chave se um dia quiser usar a API paga.
+
 - Link: https://platform.claude.com/settings/keys (o antigo console.anthropic.com redireciona para o mesmo lugar)
 - A API é pré-paga: é preciso comprar créditos em Billing (mínimo US$ 5) antes da chave funcionar. Créditos da API são separados da assinatura do claude.ai/Claude Code.
 - Criar a chave em "Create Key", dar um nome (ex.: `job-hunter`) e copiar na hora — ela só aparece uma vez.

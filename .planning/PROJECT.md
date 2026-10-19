@@ -43,6 +43,7 @@ Um currículo adaptado e verdadeiro por vaga, sem trabalho manual: a IA nunca in
 | PDF via Playwright `page.pdf()` | Já é dependência; weasyprint exige GTK no Windows | Adotado, testado |
 | Validação anti-invenção em código (experiências, projetos, habilidades, números) | Regra "nunca inventar" não pode depender só do prompt | Adotado, testado |
 | Seção `estudando` separada das habilidades | Plano de estudo não é experiência | Adotado |
+| IA via Claude Code (`claude -p`) quando não há `ANTHROPIC_API_KEY` | Pedro não tem créditos de API; usa o plano que já paga | Adotado, testado 2026-10-19 |
 | GSD versão leve (sem `/gsd-new-project`) | Economia de tokens | Adotado em 2026-10-19 |
 
 ---

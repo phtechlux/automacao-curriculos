@@ -2,7 +2,11 @@
 import json
 import os
 import re
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 import yaml
 
@@ -15,6 +19,43 @@ MODELO = os.getenv("CLAUDE_MODEL", "claude-sonnet-5-5")
 
 class CurriculoInvalido(Exception):
     pass
+
+
+class ClaudeCLI:
+    """Usa o Claude Code instalado (`claude -p`, plano do usuário) no lugar da API paga.
+
+    Imita `client.messages.create` para o resto do código não mudar."""
+
+    def __init__(self, modelo: str = os.getenv("CLAUDE_CLI_MODEL", "sonnet"), timeout: int = 300):
+        self.exe = shutil.which("claude")
+        if not self.exe:
+            raise RuntimeError("Claude Code não encontrado; instale-o ou defina ANTHROPIC_API_KEY no .env")
+        self.modelo, self.timeout = modelo, timeout
+        self.messages = self
+
+    def create(self, model=None, max_tokens=None, system=(), messages=()):
+        instrucoes, *contexto = [b["text"] for b in system]
+        conversa = [f"[{m['role'].upper()}]\n{m['content']}" for m in messages]
+        entrada = "\n\n".join(contexto + conversa)
+        # roda fora do projeto para não carregar CLAUDE.md, hooks nem ferramentas
+        with tempfile.TemporaryDirectory() as pasta:
+            r = subprocess.run(
+                [self.exe, "-p", "--output-format", "text", "--model", self.modelo, "--tools", "",
+                 "--no-session-persistence", "--strict-mcp-config", "--system-prompt", instrucoes],
+                input=entrada, capture_output=True, text=True, encoding="utf-8", cwd=pasta, timeout=self.timeout,
+            )
+        if r.returncode != 0:
+            raise RuntimeError(f"claude -p falhou: {r.stderr.strip()[:500]}")
+        return SimpleNamespace(content=[SimpleNamespace(text=r.stdout)])
+
+
+def cliente_padrao():
+    """API paga se houver chave; senão o Claude Code do usuário."""
+    if os.getenv("ANTHROPIC_API_KEY"):
+        import anthropic
+
+        return anthropic.Anthropic()
+    return ClaudeCLI()
 
 
 def carregar_curriculo(caminho: Path = CURRICULO) -> dict:
@@ -73,10 +114,7 @@ def validar(base: dict, adaptado: dict) -> list[str]:
 
 def adaptar(vaga: Vaga, base: dict | None = None, client=None, tentativas: int = 2) -> dict:
     base = base or carregar_curriculo()
-    if client is None:
-        import anthropic
-
-        client = anthropic.Anthropic()
+    client = client or cliente_padrao()
     # currículo no system com cache: igual para todas as vagas, barateia as chamadas seguintes
     system = [
         {"type": "text", "text": PROMPT.read_text(encoding="utf-8")},
