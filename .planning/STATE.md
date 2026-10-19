@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-10-19)
 Phase: 2 of 6 (Coleta)
 Plan: 0 of ? in current phase
 Status: Ready to plan
-Last activity: 2026-10-19 — IA via Claude Code (sem API paga) testada com vaga de exemplo → PDF
+Last activity: 2026-10-19 — coleta com filtro/dedupe + painel web local (colar descrição → gerar PDF)
 
 Progress: [██░░░░░░░░] 17%
 
@@ -44,10 +44,10 @@ None yet.
 ### Blockers/Concerns
 
 - Gmail OK (token.json criado 2026-10-19): 35 alertas Indeed / 169 vagas em 30 dias; nenhum alerta LinkedIn/VanHack/Turing
-- Indeed responde HTTP 403 ao script e o e-mail só traz título/empresa/local → sem descrição. Não contornar. Plano: painel com "abrir vaga" + colar descrição; filtro de relevância e dedupe
+- Indeed responde HTTP 403 ao script → descrição colada no painel (não contornar). Filtro de relevância + dedupe prontos: 169 → 11 vagas
 
 ## Session Continuity
 
 Last session: 2026-10-19
-Stopped at: coleta real do Gmail funcionando; decidir como obter a descrição das vagas do Indeed
+Stopped at: painel web local (`python -m curriculos`) pronto; Pedro testando com vagas reais
 Resume file: None

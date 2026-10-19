@@ -12,6 +12,8 @@ class Vaga:
     empresa: str = ""
     local: str = ""
     descricao: str = ""
+    status: str = "nova"  # nova | gerada | candidatada | descartada
+    pdf: str = ""
 
     @property
     def id(self) -> str:

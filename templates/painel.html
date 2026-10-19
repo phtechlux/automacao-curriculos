@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Vagas</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #fff; --texto: #1b1f24; --suave: #5b6470; --borda: #dde1e6;
+    --primaria: #2563eb; --primaria-txt: #fff; --ok: #15803d; --aviso: #b45309; --erro: #b91c1c;
+    --chip: #eef2f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1216; --card: #171b21; --texto: #e6e9ee; --suave: #9aa4b2; --borda: #2a313a;
+      --primaria: #3b82f6; --primaria-txt: #fff; --ok: #4ade80; --aviso: #fbbf24; --erro: #f87171;
+      --chip: #212831;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--texto); font: 15px/1.45 system-ui, Segoe UI, Roboto, sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--borda); }
+  .topo { max-width: 960px; margin: 0 auto; padding: 14px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  h1 { font-size: 18px; margin: 0; flex: 1; }
+  main { max-width: 960px; margin: 0 auto; padding: 16px; }
+  button { font: inherit; border: 1px solid var(--borda); background: var(--card); color: var(--texto);
+           padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+  button:hover { border-color: var(--suave); }
+  button.primario { background: var(--primaria); color: var(--primaria-txt); border-color: var(--primaria); }
+  button:disabled { opacity: .55; cursor: wait; }
+  .filtros { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  .aba { border-radius: 999px; padding: 5px 12px; }
+  .aba.ativa { background: var(--texto); color: var(--bg); border-color: var(--texto); }
+  .aba .n { opacity: .7; margin-left: 4px; }
+  input[type=search] { flex: 1; min-width: 180px; font: inherit; padding: 7px 10px; border-radius: 8px;
+                       border: 1px solid var(--borda); background: var(--card); color: var(--texto); }
+  .vaga { background: var(--card); border: 1px solid var(--borda); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .cab { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+  .titulo { font-weight: 600; margin: 0 0 2px; }
+  .meta { color: var(--suave); font-size: 13.5px; }
+  .chip { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--suave); }
+  .chip.gerada { color: var(--ok); } .chip.nova { color: var(--aviso); }
+  .acoes { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  textarea { width: 100%; min-height: 110px; margin-top: 10px; font: inherit; font-size: 14px; padding: 8px 10px;
+             border-radius: 8px; border: 1px solid var(--borda); background: var(--bg); color: var(--texto); resize: vertical; }
+  a { color: var(--primaria); }
+  .msg { font-size: 13.5px; } .msg.erro { color: var(--erro); } .msg.ok { color: var(--ok); }
+  .vazio { text-align: center; color: var(--suave); padding: 40px 0; }
+  details summary { cursor: pointer; color: var(--suave); font-size: 13.5px; margin-top: 8px; }
+  details p { white-space: pre-wrap; font-size: 13.5px; max-height: 240px; overflow: auto; }
+</style>
+</head>
+<body>
+<header><div class="topo">
+  <h1>Painel de Vagas</h1>
+  <span class="msg" id="aviso"></span>
+  <button class="primario" id="coletar">Buscar novas vagas no Gmail</button>
+</div></header>
+<main>
+  <div class="filtros" id="abas"></div>
+  <div class="filtros"><input type="search" id="busca" placeholder="Filtrar por título, empresa ou local"></div>
+  <div id="lista"></div>
+</main>
+<script>
+const ABAS = [["nova", "Para fazer"], ["gerada", "Currículo pronto"], ["candidatada", "Candidatadas"], ["descartada", "Descartadas"], ["todas", "Todas"]];
+let vagas = [], aba = "nova";
+try { aba = localStorage.getItem("aba") || "nova"; } catch (e) {}
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function api(url, corpo) {
+  const r = await fetch(url, corpo === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(corpo)});
+  const dados = await r.json();
+  if (!r.ok) throw new Error(dados.erro || r.status);
+  return dados;
+}
+
+async function carregar() { vagas = await api("/api/vagas"); desenhar(); }
+
+function desenhar() {
+  const conta = s => s === "todas" ? vagas.length : vagas.filter(v => v.status === s).length;
+  $("#abas").innerHTML = ABAS.map(([s, nome]) =>
+    `<button class="aba ${s === aba ? "ativa" : ""}" data-aba="${s}">${nome}<span class="n">${conta(s)}</span></button>`).join("");
+  const q = $("#busca").value.toLowerCase();
+  const lista = vagas.filter(v => (aba === "todas" || v.status === aba) &&
+    `${v.titulo} ${v.empresa} ${v.local}`.toLowerCase().includes(q));
+  $("#lista").innerHTML = lista.length ? lista.map(cartao).join("") : `<p class="vazio">Nenhuma vaga aqui.</p>`;
+}
+
+function cartao(v) {
+  const semDesc = !v.descricao;
+  return `<article class="vaga" data-id="${v.id}">
+    <div class="cab"><div>
+      <p class="titulo">${esc(v.titulo)}</p>
+      <div class="meta">${esc(v.empresa)}${v.local ? " · " + esc(v.local) : ""} · ${esc(v.fonte)}</div>
+    </div><span class="chip ${v.status}">${esc(v.status)}</span></div>
+    ${semDesc
+      ? `<textarea placeholder="1) Clique em Abrir vaga  2) Copie a descrição inteira  3) Cole aqui"></textarea>`
+      : `<details><summary>Descrição (${v.descricao.length} caracteres)</summary><p>${esc(v.descricao)}</p></details>`}
+    <div class="acoes">
+      <a href="${esc(v.link)}" target="_blank" rel="noopener"><button>Abrir vaga</button></a>
+      <button class="primario" data-acao="gerar">${v.pdf ? "Gerar de novo" : (semDesc ? "Salvar e gerar currículo" : "Gerar currículo")}</button>
+      ${v.pdf ? `<a href="/pdf/${encodeURIComponent(v.pdf)}" target="_blank"><button>Ver PDF</button></a>` : ""}
+      ${v.status !== "candidatada" ? `<button data-acao="candidatada">Já me candidatei</button>` : ""}
+      ${v.status !== "descartada" ? `<button data-acao="descartada">Descartar</button>` : `<button data-acao="nova">Restaurar</button>`}
+      <span class="msg"></span>
+    </div></article>`;
+}
+
+function atualizar(nova) { vagas = vagas.map(v => v.id === nova.id ? nova : v); desenhar(); }
+
+$("#lista").addEventListener("click", async e => {
+  const botao = e.target.closest("button[data-acao]"); if (!botao) return;
+  const card = botao.closest(".vaga"), id = card.dataset.id, msg = card.querySelector(".msg"), acao = botao.dataset.acao;
+  botao.disabled = true; msg.className = "msg";
+  try {
+    if (acao === "gerar") {
+      const txt = card.querySelector("textarea");
+      if (txt) {
+        if (txt.value.trim().length < 100) throw new Error("cole a descrição completa da vaga");
+        await api(`/api/vagas/${id}/descricao`, {descricao: txt.value});
+      }
+      msg.textContent = "Gerando com o Claude… (cerca de 1 minuto)";
+      atualizar(await api(`/api/vagas/${id}/gerar`, {}));
+    } else {
+      atualizar(await api(`/api/vagas/${id}/status`, {status: acao}));
+    }
+  } catch (err) { msg.className = "msg erro"; msg.textContent = err.message; botao.disabled = false; }
+});
+
+$("#abas").addEventListener("click", e => {
+  const b = e.target.closest("[data-aba]"); if (!b) return;
+  aba = b.dataset.aba; try { localStorage.setItem("aba", aba); } catch (e) {}
+  desenhar();
+});
+$("#busca").addEventListener("input", desenhar);
+
+$("#coletar").addEventListener("click", async e => {
+  const b = e.target; b.disabled = true; $("#aviso").className = "msg"; $("#aviso").textContent = "Lendo o Gmail…";
+  try { const r = await api("/api/coletar", {dias: 7}); $("#aviso").className = "msg ok"; $("#aviso").textContent = `${r.novas} vagas novas`; await carregar(); }
+  catch (err) { $("#aviso").className = "msg erro"; $("#aviso").textContent = err.message; }
+  b.disabled = false;
+});
+
+carregar();
+</script>
+</body>
+</html>

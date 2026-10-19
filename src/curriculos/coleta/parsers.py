@@ -31,7 +31,10 @@ def _normalizar_link(link: str, fonte: str) -> str:
     if fonte == "linkedin" and (m := PADROES["linkedin"].search(link)):
         return f"https://www.linkedin.com/jobs/view/{m.group(1)}/"
     if fonte == "indeed":
-        return link  # parâmetros (jk=...) identificam a vaga
+        # o jk identifica a vaga; o resto do link muda a cada alerta
+        if m := re.search(r"[?&]jk=([0-9a-f]+)", link):
+            return f"https://{urlparse(link).netloc}/viewjob?jk={m.group(1)}"
+        return link
     u = urlparse(link)
     return f"{u.scheme}://{u.netloc}{u.path}"
 
