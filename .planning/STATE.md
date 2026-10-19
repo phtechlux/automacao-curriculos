@@ -43,10 +43,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 2 precisa de `credentials.json` do Gmail (Pedro cria no Google Cloud Console; passos em docs/setup.md)
+- Gmail OK (token.json criado 2026-10-19): 35 alertas Indeed / 169 vagas em 30 dias; nenhum alerta LinkedIn/VanHack/Turing
+- Indeed responde HTTP 403 ao script e o e-mail só traz título/empresa/local → sem descrição. Não contornar. Plano: painel com "abrir vaga" + colar descrição; filtro de relevância e dedupe
 
 ## Session Continuity
 
 Last session: 2026-10-19
-Stopped at: GSD setup concluído; aguardando credenciais para rodar a coleta real
+Stopped at: coleta real do Gmail funcionando; decidir como obter a descrição das vagas do Indeed
 Resume file: None
