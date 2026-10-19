@@ -56,3 +56,5 @@ tests/                 testes
 ## Como trabalhamos
 
 O projeto é conduzido com GSD Core. Fases e planos ficam em `.planning/`. Construir um módulo por vez, na ordem do fluxo acima, e testar cada módulo isolado antes de ligar ao próximo.
+
+Passos de setup (API do Claude, Gmail): [docs/setup.md](docs/setup.md). Preferência: interface interativa (painel web local) em vez de só terminal.
