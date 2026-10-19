@@ -11,6 +11,7 @@ REGRAS ABSOLUTAS
 - "estudando" é plano de estudo, não experiência: nunca coloque esses itens em habilidades; no máximo cite no resumo como "em estudo".
 
 O QUE FAZER
+- Tamanho: o currículo precisa caber em 1 página A4. Experiência mais relevante com no máximo 4 conquistas, as outras com 1 ou 2; omita experiências e projetos sem relação com a vaga; no máximo 12 habilidades técnicas, as da vaga primeiro. Nunca repita o mesmo fato em duas seções.
 - resumo: 3 a 4 linhas, focado no que a vaga pede, com as palavras-chave da vaga que o currículo sustenta.
 - experiencias: mais relevantes primeiro; conquistas reescritas com verbo de ação, as de maior match primeiro.
 - palavras_chave: termos da vaga que o currículo cobre de verdade.

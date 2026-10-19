@@ -29,3 +29,13 @@ def test_pdf_real(tmp_path):
     except Exception as e:  # chromium não instalado
         pytest.skip(str(e)[:80])
     assert caminho.read_bytes()[:4] == b"%PDF"
+
+
+def test_contatos_viram_links():
+    from curriculos.pdf import contatos
+    itens = contatos({"localizacao": "Brasília", "telefone": "(61) 99843-3188", "email": "a@b.com",
+                      "github": "github.com/phtechlux", "linkedin": ""}, "pt")
+    assert itens == [("Brasília", None), ("(61) 99843-3188", "tel:+5561998433188"),
+                     ("E-mail", "mailto:a@b.com"), ("GitHub", "https://github.com/phtechlux")]
+    html = renderizar_html({**CV, "contato": {"github": "github.com/x"}}, "pt")
+    assert '<a href="https://github.com/x">GitHub</a>' in html and "github.com/x</" not in html

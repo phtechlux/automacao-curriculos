@@ -16,6 +16,32 @@ TITULOS = {
 }
 
 
+# chave do contato -> (rótulo pt, rótulo en, prefixo do link)
+LINKS = {
+    "email": ("E-mail", "Email", "mailto:"),
+    "linkedin": ("LinkedIn", "LinkedIn", "https://"),
+    "github": ("GitHub", "GitHub", "https://"),
+    "portfolio": ("Portfólio", "Portfolio", "https://"),
+}
+
+
+def contatos(contato: dict, idioma: str = "en") -> list[tuple[str, str | None]]:
+    """Links viram só o rótulo clicável; o resto (cidade, telefone) fica como texto."""
+    itens = []
+    for chave, valor in (contato or {}).items():
+        if not valor:
+            continue
+        if chave in LINKS:
+            pt, en, prefixo = LINKS[chave]
+            href = valor if valor.startswith(("http", "mailto:")) else prefixo + valor
+            itens.append((pt if idioma == "pt" else en, href))
+        elif chave == "telefone":
+            itens.append((valor, "tel:+55" + "".join(ch for ch in valor if ch.isdigit())))
+        else:
+            itens.append((valor, None))
+    return itens
+
+
 def _slug(texto: str, limite: int = 40) -> str:
     texto = unicodedata.normalize("NFKD", texto or "").encode("ascii", "ignore").decode()
     return re.sub(r"[^A-Za-z0-9]+", "_", texto).strip("_")[:limite].rstrip("_") or "X"
@@ -27,7 +53,9 @@ def nome_arquivo(nome: str, empresa: str, vaga: str) -> str:
 
 def renderizar_html(curriculo: dict, idioma: str = "en", templates: Path = TEMPLATES) -> str:
     env = Environment(loader=FileSystemLoader(templates), autoescape=select_autoescape())
-    return env.get_template("curriculo.html").render(c=curriculo, t=TITULOS.get(idioma, TITULOS["en"]), idioma=idioma)
+    return env.get_template("curriculo.html").render(
+        c=curriculo, t=TITULOS.get(idioma, TITULOS["en"]), idioma=idioma, contatos=contatos(curriculo.get("contato"), idioma)
+    )
 
 
 def html_para_pdf(html: str, destino: Path) -> Path:
