@@ -58,7 +58,7 @@
 <header><div class="topo">
   <h1>Painel de Vagas</h1>
   <span class="msg" id="aviso"></span>
-  <button class="primario" id="coletar">Buscar novas vagas no Gmail</button>
+  <button class="primario" id="coletar">Buscar novas vagas</button>
 </div></header>
 <main>
   <div class="filtros" id="abas"></div>
@@ -98,7 +98,9 @@ function cartao(v) {
     <div class="cab"><div>
       <p class="titulo">${esc(v.titulo)}</p>
       <div class="meta">${esc(v.empresa)}${v.local ? " · " + esc(v.local) : ""} · ${esc(v.fonte)}</div>
-    </div><span class="chip ${v.status}">${esc(v.status)}</span></div>
+    </div><span><span class="chip" title="Habilidades do seu currículo citadas na vaga: ${esc((v.em_comum || []).join(", "))}">afinidade ${v.afinidade || 0}%</span>
+    <span class="chip ${v.status}">${esc(v.status)}</span></span></div>
+    ${(v.em_comum || []).length ? `<div class="meta">Em comum: ${esc(v.em_comum.join(", "))}</div>` : ""}
     ${semDesc
       ? `<textarea placeholder="1) Clique em Abrir vaga  2) Copie a descrição inteira  3) Cole aqui"></textarea>`
       : `<details><summary>Descrição (${v.descricao.length} caracteres)</summary><p>${esc(v.descricao)}</p></details>`}
@@ -153,7 +155,7 @@ $("#abas").addEventListener("click", e => {
 $("#busca").addEventListener("input", desenhar);
 
 $("#coletar").addEventListener("click", async e => {
-  const b = e.target; b.disabled = true; $("#aviso").className = "msg"; $("#aviso").textContent = "Lendo o Gmail…";
+  const b = e.target; b.disabled = true; $("#aviso").className = "msg"; $("#aviso").textContent = "Buscando no Gmail, GitHub, Remotive, Arbeitnow e Himalayas…";
   try { const r = await api("/api/coletar", {dias: 7}); $("#aviso").className = "msg ok"; $("#aviso").textContent = `${r.novas} vagas novas`; await carregar(); }
   catch (err) { $("#aviso").className = "msg erro"; $("#aviso").textContent = err.message; }
   b.disabled = false;

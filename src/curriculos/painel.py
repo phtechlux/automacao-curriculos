@@ -53,7 +53,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/":
             return self._responder(200, PAGINA.read_bytes(), "text/html; charset=utf-8")
         if self.path == "/api/vagas":
-            return self._responder(200, [_json_vaga(v) for v in carregar_vagas(PASTA_VAGAS)])
+            return self._responder(200, [_json_vaga(v) for v in sorted(carregar_vagas(PASTA_VAGAS), key=lambda v: -v.afinidade)])
         if self.path.startswith("/pdf/"):
             nome = Path(self.path[5:]).name  # sem subpastas
             caminho = SAIDA / nome
@@ -73,12 +73,18 @@ class Handler(BaseHTTPRequestHandler):
             self._responder(500, {"erro": str(e)})
 
     def _coletar(self, dias: int):
-        from curriculos.coleta import coletar
+        from curriculos.coleta import coletar, coletar_abertas
         from curriculos.coleta.gmail import servico
+        from curriculos.ia import carregar_curriculo
 
+        base = carregar_curriculo()
         with _trava:
-            novas = coletar(servico(), dias=dias)
-        self._responder(200, {"novas": len(novas)})
+            abertas = coletar_abertas(PASTA_VAGAS, base=base)
+            try:
+                gmail = coletar(servico(), dias=dias, pasta=PASTA_VAGAS, base=base)
+            except Exception:  # sem token/rede: segue só com as fontes abertas
+                gmail = []
+        self._responder(200, {"novas": len(abertas) + len(gmail)})
 
     def _acao(self, vaga: Vaga, arq: Path, acao: str, corpo: dict):
         if acao == "descricao":

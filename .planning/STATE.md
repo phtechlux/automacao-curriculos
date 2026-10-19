@@ -49,5 +49,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-10-19
-Stopped at: painel web local (`python -m curriculos`) pronto; Pedro testando com vagas reais
+Stopped at: fontes abertas (GitHub vagas BR, Remotive, Arbeitnow, Himalayas) + afinidade grátis no painel
 Resume file: None

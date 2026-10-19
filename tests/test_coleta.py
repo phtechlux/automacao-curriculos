@@ -88,3 +88,30 @@ def test_coletar_dedupe_por_titulo_empresa(tmp_path, monkeypatch):
     alertas = [("alert@indeed.com", "", html.format(jk="aa")), ("alert@indeed.com", "", html.format(jk="bb"))]
     monkeypatch.setattr(gmail, "buscar_alertas", lambda svc, dias: iter(alertas))
     assert len(coletar(None, pasta=tmp_path)) == 1
+
+
+def test_afinidade():
+    from curriculos.coleta.filtro import afinidade
+    base = {"habilidades": {"tecnicas": ["React", "Java (acadêmico)", "Node.js"], "ferramentas": ["Git"]}}
+    nota, comum = afinidade(Vaga(titulo="Dev", link="x", fonte="t", descricao="Usamos React, Git e JavaScript"), base)
+    assert comum == ["React", "Git"] and nota == 33  # "Java" não casa dentro de "JavaScript"
+
+
+def test_coletar_abertas(tmp_path):
+    from curriculos.coleta import coletar_abertas
+    vagas = [Vaga(titulo="Desenvolvedor React Júnior", link="https://g/1", fonte="github", descricao="React e Git"),
+             Vaga(titulo="Desenvolvedor React Júnior", link="https://g/2", fonte="github", descricao="repetida"),
+             Vaga(titulo="Vendedor", link="https://g/3", fonte="github", descricao="vendas"),
+             Vaga(titulo="Frontend Developer", link="https://g/4", fonte="remotive", descricao="")]
+    base = {"habilidades": {"tecnicas": ["React"]}}
+    novas = coletar_abertas(tmp_path, base=base, buscar=lambda: vagas)
+    assert [v.link for v in novas] == ["https://g/1"] and novas[0].em_comum == ["React"]
+
+
+def test_filtro_exclusivas_e_chave():
+    from curriculos.coleta.filtro import chave, relevante
+    v = lambda t, e="": Vaga(titulo=t, link="x", fonte="github", empresa=e)
+    assert not relevante(v("Software Engineer, Early Career (For Women in Tech Candidates)"))
+    assert not relevante(v("Software Engineering Manager"))
+    assert not relevante(v("Ads Solutions Engineering Manager"))
+    assert chave(v("Full Stack Developer Júnior", "Rotha IA")) == chave(v("Full Stack Developer Júnior - Rotha IA"))

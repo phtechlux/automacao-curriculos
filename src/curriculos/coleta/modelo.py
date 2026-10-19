@@ -14,6 +14,8 @@ class Vaga:
     descricao: str = ""
     status: str = "nova"  # nova | gerada | candidatada | descartada
     pdf: str = ""
+    afinidade: int = 0  # nota grátis, sem IA (0-100)
+    em_comum: list = field(default_factory=list)
     analise: dict = field(default_factory=dict)  # cobertura, requisitos, lacunas, entrevista
 
     @property
