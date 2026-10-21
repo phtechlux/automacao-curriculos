@@ -73,12 +73,20 @@
       <span class="msg" id="nvMsg"></span>
     </div>
   </div>
+  <div class="vaga" id="formCurriculo" hidden>
+    <p class="titulo">Meu currículo base (YAML)</p>
+    <p class="meta">Cole aqui a estrutura do seu currículo. Veja o modelo em data/curriculo_base/curriculo.exemplo.yaml.</p>
+    <textarea id="cvYaml" style="min-height:220px;font-family:monospace"></textarea>
+    <div class="acoes"><button class="primario" id="cvSalvar">Salvar currículo</button><span class="msg" id="cvMsg"></span></div>
+  </div>
   <div class="filtros" id="abas"></div>
   <div class="filtros"><input type="search" id="busca" placeholder="Filtrar por título, empresa ou local"></div>
   <div id="lista"></div>
 </main>
 <script>
 const ABAS = [["nova", "Para fazer"], ["gerada", "Currículo pronto"], ["candidatada", "Candidatadas"], ["descartada", "Descartadas"], ["todas", "Todas"]];
+const TOKEN = (location.pathname.match(/^\/c\/([^/]+)/) || [])[1] || "";
+const BASE = TOKEN ? `/c/${TOKEN}` : "";
 let vagas = [], aba = "nova";
 try { aba = localStorage.getItem("aba") || "nova"; } catch (e) {}
 
@@ -92,7 +100,7 @@ async function api(url, corpo) {
   return dados;
 }
 
-async function carregar() { vagas = await api("/api/vagas"); desenhar(); }
+async function carregar() { vagas = await api(`${BASE}/api/vagas`); desenhar(); }
 
 function desenhar() {
   const conta = s => s === "todas" ? vagas.length : vagas.filter(v => v.status === s).length;
@@ -120,7 +128,7 @@ function cartao(v) {
     <div class="acoes">
       ${v.link.startsWith("manual://") ? "" : `<a href="${esc(v.link)}" target="_blank" rel="noopener"><button>Abrir vaga</button></a>`}
       <button class="primario" data-acao="gerar">${v.pdf ? "Gerar de novo" : (semDesc ? "Salvar e gerar currículo" : "Gerar currículo")}</button>
-      ${v.pdf ? `<a href="/pdf/${encodeURIComponent(v.pdf)}" target="_blank"><button>Ver PDF</button></a>` : ""}
+      ${v.pdf ? `<a href="${BASE}/pdf/${encodeURIComponent(v.pdf)}" target="_blank"><button>Ver PDF</button></a>` : ""}
       ${v.status !== "candidatada" ? `<button data-acao="candidatada">Já me candidatei</button>` : ""}
       ${v.status !== "descartada" ? `<button data-acao="descartada">Descartar</button>` : `<button data-acao="nova">Restaurar</button>`}
       <span class="msg"></span>
@@ -149,12 +157,13 @@ $("#lista").addEventListener("click", async e => {
       const txt = card.querySelector("textarea");
       if (txt) {
         if (txt.value.trim().length < 100) throw new Error("cole a descrição completa da vaga");
-        await api(`/api/vagas/${id}/descricao`, {descricao: txt.value});
+        await api(`${BASE}/api/vagas/${id}/descricao`, {descricao: txt.value});
       }
       msg.textContent = "Gerando com o Claude… (cerca de 1 minuto)";
-      atualizar(await api(`/api/vagas/${id}/gerar`, {}));
+      atualizar(await api(`${BASE}/api/vagas/${id}/gerar`, {}));
+      if (TOKEN) carregarConta();
     } else {
-      atualizar(await api(`/api/vagas/${id}/status`, {status: acao}));
+      atualizar(await api(`${BASE}/api/vagas/${id}/status`, {status: acao}));
     }
   } catch (err) { msg.className = "msg erro"; msg.textContent = err.message; botao.disabled = false; }
 });
@@ -172,7 +181,7 @@ $("#nvSalvar").addEventListener("click", async () => {
   const msg = $("#nvMsg");
   msg.className = "msg"; msg.textContent = "";
   try {
-    await api("/api/vagas", {
+    await api(`${BASE}/api/vagas`, {
       titulo: $("#nvTitulo").value.trim(), empresa: $("#nvEmpresa").value.trim(),
       local: $("#nvLocal").value.trim(), descricao: $("#nvDescricao").value.trim(),
     });
@@ -188,6 +197,23 @@ $("#coletar").addEventListener("click", async e => {
   catch (err) { $("#aviso").className = "msg erro"; $("#aviso").textContent = err.message; }
   b.disabled = false;
 });
+
+async function carregarConta() {
+  if (!TOKEN) return;
+  try { const c = await api(`${BASE}/api/conta`); $("#aviso").textContent = `${c.creditos} créditos`; }
+  catch (e) { $("#aviso").className = "msg erro"; $("#aviso").textContent = "conta não encontrada"; }
+}
+$("#cvSalvar").addEventListener("click", async () => {
+  const msg = $("#cvMsg"); msg.className = "msg"; msg.textContent = "";
+  try { await api(`${BASE}/api/curriculo`, {yaml: $("#cvYaml").value}); msg.className = "msg ok"; msg.textContent = "salvo"; }
+  catch (err) { msg.className = "msg erro"; msg.textContent = err.message; }
+});
+if (TOKEN) {
+  $("#coletar").hidden = true;
+  $("#formCurriculo").hidden = false;
+  carregarConta();
+  api(`${BASE}/api/curriculo`).then(r => { $("#cvYaml").value = r.yaml || ""; });
+}
 
 carregar();
 </script>

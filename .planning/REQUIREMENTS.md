@@ -38,23 +38,23 @@
 - [x] **ENT-02**: coleta por Gmail/fontes abertas continua disponível mas opcional, nunca bloqueia o uso
 
 ### Contas
-- [ ] **CTA-01**: cadastro e login do usuário
-- [ ] **CTA-02**: currículo base por conta, via formulário/upload (sem editar YAML à mão)
-- [ ] **CTA-03**: vagas, PDFs e histórico isolados por conta
+- [x] **CTA-01**: cadastro e login do usuário — sem senha: token da conta criado pelo webhook, acesso via `/entrar` (e-mail da compra)
+- [x] **CTA-02**: currículo base por conta, via formulário/upload (sem editar YAML à mão) — textarea YAML no painel, `POST /api/curriculo`
+- [x] **CTA-03**: vagas, PDFs e histórico isolados por conta — `data/contas/<token>/{vagas,output,curriculo.yaml}`
 
 ### Créditos e cobrança
-- [ ] **COB-01**: webhook da Kiwify (compra aprovada) credita plano/créditos na conta
-- [ ] **COB-02**: gerar currículo consome 1 crédito; bloqueia e avisa quando acabar
-- [ ] **COB-03**: IA roda sempre via `ANTHROPIC_API_KEY` em produção (nunca `claude -p`), custo medido por geração
+- [x] **COB-01**: webhook da Kiwify (compra aprovada) credita plano/créditos na conta — `POST /webhook/kiwify?secret=...` (`kiwify.py`)
+- [x] **COB-02**: gerar currículo consome 1 crédito; bloqueia e avisa quando acabar — `contas.consumir()`, HTTP 402 quando zera
+- [x] **COB-03**: IA roda sempre via `ANTHROPIC_API_KEY` em produção (nunca `claude -p`) — já é o comportamento de `cliente_padrao()`; só setar a env var em produção
 
 ### Hospedagem
-- [ ] **HOS-01**: painel acessível via HTTPS, não só `127.0.0.1`
-- [ ] **HOS-02**: ambiente de produção com Playwright funcionando para gerar PDF
+- [x] **HOS-01**: painel acessível via HTTPS, não só `127.0.0.1` — `rodar()` lê `HOST`/`PORTA` do ambiente
+- [x] **HOS-02**: ambiente de produção com Playwright funcionando para gerar PDF — `Dockerfile` usa imagem oficial do Playwright com Chromium
 
 ### Lançamento
-- [ ] **LAN-01**: produto configurado na Kiwify (planos/créditos, preço, página de vendas)
-- [ ] **LAN-02**: política de privacidade e termos de uso publicados
-- [ ] **LAN-03**: fluxo pós-compra entrega acesso/login ao comprador
+- [ ] **LAN-01**: produto configurado na Kiwify (planos/créditos, preço, página de vendas) — rascunho de copy pronto em `docs/pagina-vendas.md`; falta configurar de fato no painel da Kiwify (ação do Pedro, fora do código)
+- [x] **LAN-02**: política de privacidade e termos de uso — rascunhos em `docs/privacidade.md` e `docs/termos.md` (revisar com advogado antes de publicar)
+- [x] **LAN-03**: fluxo pós-compra entrega acesso ao comprador — `/entrar` (sem precisar de serviço de e-mail)
 
 ## Out of Scope
 - Envio automático, contorno de anti-bot, invenção de fatos

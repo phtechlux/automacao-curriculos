@@ -1,0 +1,16 @@
+.env
+credentials.json
+token.json
+data/curriculo_base/*
+!data/curriculo_base/curriculo.exemplo.yaml
+data/vagas/*
+!data/vagas/.gitkeep
+data/contas/
+output/*
+!output/.gitkeep
+.git/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+tests/

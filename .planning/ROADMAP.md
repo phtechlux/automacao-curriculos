@@ -14,10 +14,10 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 - [x] **Phase 2: Entrada manual** - criar vaga colando descrição, sem depender de Gmail
 - [ ] **Phase 3: IA** - adaptar o currículo à vaga via Claude, sem inventar, com custo medível
 - [ ] **Phase 4: PDF** - gerar o PDF ATS-friendly
-- [ ] **Phase 5: Contas** - cadastro/login, currículo base por conta, dados isolados
-- [ ] **Phase 6: Créditos e cobrança** - webhook Kiwify, consumo de crédito por geração
-- [ ] **Phase 7: Hospedagem** - painel em servidor com HTTPS e Playwright funcionando
-- [ ] **Phase 8: Lançamento** - produto na Kiwify, termos, privacidade, página de vendas
+- [x] **Phase 5: Contas** - cadastro/login, currículo base por conta, dados isolados
+- [x] **Phase 6: Créditos e cobrança** - webhook Kiwify, consumo de crédito por geração
+- [x] **Phase 7: Hospedagem** - painel em servidor com HTTPS e Playwright funcionando
+- [~] **Phase 8: Lançamento** - conteúdo pronto (vendas/termos/privacidade); configurar o produto na Kiwify fica por sua conta
 - [ ] **Phase 9 (futuro, pessoal): Submissão** - cover letter, rascunho no Gmail, formulário pausado
 - [ ] **Phase 10 (futuro, avançado): Coleta automática via Gmail** - opcional, local, fora do produto v1
 
@@ -69,7 +69,8 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 1. Cadastro/login funcionando (pode ser simples: e-mail + senha ou magic link)
 2. Currículo base enviado por formulário ou upload, sem editar YAML à mão
 3. Vagas, PDFs e histórico de um usuário não aparecem para outro
-**Notes**: maior mudança de arquitetura do pivô — hoje tudo é arquivo local único (`data/curriculo_base/curriculo.yaml`, `data/vagas/`, sem conceito de usuário).
+**Notes**: implementado sem senha/e-mail transacional — `src/curriculos/contas.py` isola por token em `data/contas/<token>/`; acesso via `/entrar` (e-mail da compra → token). Modo local do Pedro (`/`, sem token) continua intocado.
+**Status**: Completo (2026-10-21)
 
 ### Phase 6: Créditos e cobrança
 **Goal**: compra na Kiwify vira créditos na conta; gerar currículo consome crédito
@@ -78,6 +79,8 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 **Success Criteria**:
 1. Webhook da Kiwify recebido e validado credita a conta certa
 2. Painel bloqueia "gerar" e avisa quando os créditos acabam
+**Notes**: `src/curriculos/kiwify.py` + `POST /webhook/kiwify?secret=...`. Autenticação é um segredo próprio (`KIWIFY_WEBHOOK_SECRET`) colocado na URL configurada no painel da Kiwify — não depende do esquema de assinatura deles. Nomes de campo do payload (status/e-mail/produto) seguem o formato mais comum; **conferir contra um envio de teste real da Kiwify** ao configurar (parte do checklist de lançamento, não bloqueia o código).
+**Status**: Completo (2026-10-21)
 
 ### Phase 7: Hospedagem
 **Goal**: painel acessível na internet, não só em `127.0.0.1`
@@ -86,6 +89,8 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 **Success Criteria**:
 1. Painel acessível via HTTPS num domínio
 2. Geração de PDF com Playwright funcionando no ambiente de produção
+**Notes**: `Dockerfile` (imagem `mcr.microsoft.com/playwright/python`) + `HOST`/`PORTA` em `rodar()`. **Falta**: escolher onde hospedar (Railway/Render/Fly/VPS), apontar domínio com HTTPS, e montar volume persistente em `data/contas/` (sem isso, cada deploy apaga clientes/créditos — hoje é tudo arquivo local, não um banco de dados).
+**Status**: Código pronto (2026-10-21); deploy real depende de escolher o provedor de hospedagem
 
 ### Phase 8: Lançamento
 **Goal**: produto à venda na Kiwify
@@ -95,6 +100,8 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 1. Produto/planos configurados na Kiwify com checkout funcionando
 2. Política de privacidade e termos publicados
 3. Comprador recebe acesso automaticamente após a compra
+**Notes**: rascunhos prontos em `docs/pagina-vendas.md`, `docs/privacidade.md`, `docs/termos.md` — revisar com advogado e preencher dados reais (nome do produto, CNPJ, preço) antes de publicar. Acesso pós-compra já funciona via `/entrar` (requisito 3 cumprido pelo código). Falta a parte que só dá pra fazer dentro da conta da Kiwify: cadastrar o produto/preço e configurar a URL do webhook.
+**Status**: Conteúdo e código prontos (2026-10-21); configuração na Kiwify é ação manual do Pedro
 
 ### Phase 9: Submissão (futuro, uso pessoal)
 **Goal**: candidatura pronta para o usuário revisar e enviar
@@ -124,9 +131,9 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 | 2. Entrada manual | 1/1 | Complete | 2026-10-21 |
 | 3. IA | 0/? | Not started | - |
 | 4. PDF | 0/? | Not started | - |
-| 5. Contas | 0/? | Not started | - |
-| 6. Créditos e cobrança | 0/? | Not started | - |
-| 7. Hospedagem | 0/? | Not started | - |
-| 8. Lançamento | 0/? | Not started | - |
+| 5. Contas | 1/1 | Complete | 2026-10-21 |
+| 6. Créditos e cobrança | 1/1 | Complete | 2026-10-21 |
+| 7. Hospedagem | 1/1 | Código completo; deploy pendente | 2026-10-21 |
+| 8. Lançamento | 1/1 | Conteúdo pronto; config. na Kiwify pendente | 2026-10-21 |
 | 9. Submissão (futuro) | 0/? | Not started | - |
 | 10. Coleta Gmail (futuro) | 0/? | Not started | - |

@@ -8,6 +8,9 @@ data/vagas/*
 !data/vagas/.gitkeep
 output/*
 !output/.gitkeep
+
+# Contas de clientes do produto (e-mail, créditos, currículo, vagas, PDFs)
+data/contas/
 *.db
 *.sqlite
 
