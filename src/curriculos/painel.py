@@ -21,7 +21,7 @@ from curriculos.ia import CURRICULO as CURRICULO_PADRAO
 from curriculos.pdf import SAIDA
 
 PAGINA = Path("templates/painel.html")
-ENTRAR = b"""<!doctype html><meta charset="utf-8"><title>Entrar</title>
+ENTRAR = """<!doctype html><meta charset="utf-8"><title>Entrar</title>
 <body style="font:15px system-ui;max-width:420px;margin:60px auto;padding:0 16px">
 <h1>Acessar minha conta</h1>
 <p>Digite o e-mail usado na compra.</p>
@@ -35,10 +35,35 @@ document.getElementById("ir").onclick = async () => {
   const d = await r.json();
   if (r.ok) location.href = "/c/" + d.token; else document.getElementById("msg").textContent = d.erro || "não encontrado";
 };
-</script>"""
+</script>""".encode("utf-8")
 STATUS = {"nova", "gerada", "candidatada", "descartada"}
-PADRAO = Caminhos(vagas=PASTA_VAGAS, saida=SAIDA, curriculo=CURRICULO_PADRAO)
-_trava = threading.Lock()  # uma geração/coleta por vez (Claude Code e Gmail)
+# Uso local (Pedro): 1 por vez, como sempre foi (evita sessões concorrentes do `claude -p`).
+# Produto hospedado com ANTHROPIC_API_KEY: sem esse motivo, pode subir via GERACOES_SIMULTANEAS
+# (limitado pelos recursos do servidor — cada geração abre um Chromium do Playwright).
+_trava = threading.Semaphore(int(os.getenv("GERACOES_SIMULTANEAS", "1")))
+
+# Limitador simples (memória, por processo) pra /entrar e o webhook — ambos são endpoints
+# públicos sem login; sem isso dariam pra força-bruta de e-mail ou do segredo do webhook.
+_tentativas: dict[str, list[float]] = {}
+_tentativas_trava = threading.Lock()
+
+
+def _limitar(chave: str, maximo: int = 20, janela: float = 60.0) -> bool:
+    """True = pode seguir; False = excedeu o limite (bloquear com 429)."""
+    import time
+
+    agora = time.monotonic()
+    with _tentativas_trava:
+        hist = [t for t in _tentativas.get(chave, []) if agora - t < janela]
+        hist.append(agora)
+        _tentativas[chave] = hist
+        return len(hist) <= maximo
+
+
+def _padrao() -> Caminhos:
+    # função (não constante): lê PASTA_VAGAS/SAIDA/CURRICULO_PADRAO do módulo a cada chamada,
+    # pra respeitar monkeypatch nos testes e qualquer troca em runtime
+    return Caminhos(vagas=PASTA_VAGAS, saida=SAIDA, curriculo=CURRICULO_PADRAO)
 
 
 def _arquivo(pasta_vagas: Path, vaga_id: str) -> Path | None:
@@ -79,7 +104,7 @@ class Handler(BaseHTTPRequestHandler):
         partes = [p for p in urlsplit(self.path).path.strip("/").split("/") if p]
         if partes[:1] == ["c"] and len(partes) >= 2:
             return contas.caminhos(partes[1]), partes[2:], partes[1]
-        return PADRAO, partes, None
+        return _padrao(), partes, None
 
     def do_GET(self):
         partes_cruas = [p for p in urlsplit(self.path).path.strip("/").split("/") if p]
@@ -161,10 +186,15 @@ class Handler(BaseHTTPRequestHandler):
         elif acao == "gerar":
             if not vaga.descricao:
                 return self._responder(400, {"erro": "cole a descrição da vaga antes de gerar"})
-            if token and not contas.consumir(token):  # COB-02
-                return self._responder(402, {"erro": "sem créditos — compre mais para continuar gerando"})
             with _trava:
-                vaga = gerar(vaga, cam)
+                if token and not contas.consumir(token):  # COB-02
+                    return self._responder(402, {"erro": "sem créditos — compre mais para continuar gerando"})
+                try:
+                    vaga = gerar(vaga, cam)
+                except Exception:
+                    if token:  # geração falhou: devolve o crédito, cliente não perde nada
+                        contas.creditar(token, 1)
+                    raise
         else:
             return self._responder(400, {"erro": "ação inválida"})
         arq.write_text(json.dumps(asdict(vaga), ensure_ascii=False, indent=2), encoding="utf-8")
@@ -187,6 +217,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def _entrar(self, corpo: dict):
         """LAN-03 sem e-mail: cliente confirma o e-mail da compra e entra direto na conta."""
+        if not _limitar(f"entrar:{self.client_address[0]}"):
+            return self._responder(429, {"erro": "muitas tentativas, aguarde um pouco"})
         email = str(corpo.get("email", "")).strip()
         token = email and contas.email_para_token(email)
         if not token:
@@ -194,6 +226,8 @@ class Handler(BaseHTTPRequestHandler):
         self._responder(200, {"token": token})
 
     def _webhook_kiwify(self):
+        if not _limitar(f"webhook:{self.client_address[0]}", maximo=30):
+            return self._responder(429, {"erro": "muitas tentativas, aguarde um pouco"})
         segredo = (parse_qs(urlsplit(self.path).query).get("secret") or [""])[0]
         try:
             kiwify.validar_segredo(segredo)

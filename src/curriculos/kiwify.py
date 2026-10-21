@@ -33,12 +33,15 @@ def processar(corpo: dict) -> dict:
     if status not in ("paid", "approved", "order_approved", "completed"):
         return {"ignorado": status or "sem status"}
 
-    cliente = corpo.get("Customer") or corpo.get("customer") or {}
+    cliente = corpo.get("Customer") or corpo.get("customer")
+    cliente = cliente if isinstance(cliente, dict) else {}
     email = cliente.get("email") or corpo.get("email")
     if not email:
         raise WebhookInvalido("webhook sem e-mail do cliente")
 
-    produto = str((corpo.get("product") or {}).get("product_id") or corpo.get("product_id") or "")
+    produto_obj = corpo.get("product")
+    produto_obj = produto_obj if isinstance(produto_obj, dict) else {}
+    produto = str(produto_obj.get("product_id") or corpo.get("product_id") or "")
     creditos = PLANOS.get(produto, CREDITOS_PADRAO)
 
     token = contas.email_para_token(email)

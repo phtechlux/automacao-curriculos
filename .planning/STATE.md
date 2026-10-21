@@ -21,10 +21,10 @@ See: .planning/PROJECT.md (updated 2026-10-21)
 
 ## Current Position
 
-Phase: 8 of 10 (Lançamento) — código das Fases 2 a 8 completo nesta sessão, sem rodar testes (combinado: testes ficam para o fim)
+Phase: 8 of 10 (Lançamento) — código completo e **testado** (43 testes, incluindo os novos de contas/Kiwify/painel multiusuário + 1 ponta-a-ponta manual no servidor real)
 Plan: 0 of ? in current phase
-Status: Código pronto; falta ação manual do Pedro fora do editor (ver Pending Todos) e a bateria de testes combinada
-Last activity: 2026-10-21 — produto multiusuário completo: entrada manual, contas por token, créditos, webhook Kiwify, Dockerfile, páginas de vendas/termos/privacidade
+Status: Código pronto e testado; falta ação manual do Pedro fora do editor (ver Pending Todos)
+Last activity: 2026-10-21 — Python 3.12 e Playwright/Chromium instalados nesta máquina; bateria de testes rodada e 4 bugs reais corrigidos (ver Decisions); testado ao vivo o fluxo webhook→entrar→conta→vaga
 
 Progress: [████████░░] 80%
 
@@ -39,6 +39,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [2026-10-21]: pivô de projeto pessoal para produto multiusuário vendido na Kiwify; fluxo "colar vaga" substitui Gmail como caminho principal; Gmail automático vira Fase 10 (futuro/avançado)
 - [2026-10-21]: contas sem senha (token direto no link); acesso recuperado por e-mail em `/entrar`, sem precisar de serviço de e-mail transacional
 - [2026-10-21]: dados de conta em arquivo JSON local (`data/contas/<token>/`), não banco de dados — simples pra validar o produto, mas **não sobrevive a redeploy sem volume persistente** (ver Hospedagem)
+- [2026-10-21]: bugs achados pela bateria de testes e corrigidos: (1) HTML embutido como `bytes` literal quebrava com acento — virou `str.encode()`; (2) `PADRAO` congelava os caminhos na importação do módulo, monkeypatch/troca em runtime não tinha efeito — virou função `_padrao()`; (3) **crédito era consumido mesmo quando a geração falhava** (cliente perdia crédito sem receber nada) — agora devolve o crédito se `gerar()` lançar exceção; (4) payload do webhook com `product`/`customer` em formato inesperado (não-dict) derrubava o processamento — agora tolera
+- [2026-10-21]: `_trava` virou `Semaphore` configurável (`GERACOES_SIMULTANEAS`, padrão 1) em vez de `Lock` fixo — serializar todas as gerações de todos os clientes seria um gargalo real em produção
+- [2026-10-21]: limitador de tentativas (memória, por IP) em `/entrar` e `/webhook/kiwify` — eram os dois endpoints públicos sem autenticação forte
 
 ### Pending Todos (ações fora do código, não fiz por não ter acesso/credenciais)
 
@@ -48,7 +51,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - Testar o webhook com uma compra real/sandbox da Kiwify e conferir os nomes de campo do payload contra `kiwify.py` (pode precisar ajustar `status`/`email`/`product_id`)
 - Revisar `docs/privacidade.md` e `docs/termos.md` com advogado e preencher dados reais antes de publicar
 - Definir preço dos créditos a partir do custo real por geração via `ANTHROPIC_API_KEY` (IA-01..03/COB-03 funcionam; falta medir)
-- Rodar a bateria de testes das Fases 2-8 (combinado: só no fim do projeto)
+- ~~Rodar a bateria de testes das Fases 2-8~~ — feito: 43 testes passando (`pytest -q`), Python 3.12 + Playwright/Chromium instalados nesta máquina em `.venv/`
 
 ### Blockers/Concerns
 
@@ -60,5 +63,5 @@ Decisions are logged in PROJECT.md Key Decisions table.
 ## Session Continuity
 
 Last session: 2026-10-21
-Stopped at: código das Fases 2-8 completo e commitado, sem rodar testes (combinado). Falta: ações manuais de hospedagem/Kiwify listadas acima e a bateria de testes final.
+Stopped at: código das Fases 2-8 completo, testado (43 testes + fluxo ponta-a-ponta manual no servidor real) e com 4 bugs reais corrigidos. Falta só as ações manuais de hospedagem/Kiwify listadas acima.
 Resume file: None
