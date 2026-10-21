@@ -58,9 +58,21 @@
 <header><div class="topo">
   <h1>Painel de Vagas</h1>
   <span class="msg" id="aviso"></span>
+  <button id="nova">+ Nova vaga</button>
   <button class="primario" id="coletar">Buscar novas vagas</button>
 </div></header>
 <main>
+  <div class="vaga" id="formNova" hidden>
+    <input id="nvTitulo" placeholder="Título da vaga *" style="width:100%;margin-bottom:8px;padding:7px 10px;border-radius:8px;border:1px solid var(--borda);background:var(--bg);color:var(--texto);font:inherit">
+    <input id="nvEmpresa" placeholder="Empresa" style="width:48%;margin-right:4%;padding:7px 10px;border-radius:8px;border:1px solid var(--borda);background:var(--bg);color:var(--texto);font:inherit">
+    <input id="nvLocal" placeholder="Local" style="width:48%;padding:7px 10px;border-radius:8px;border:1px solid var(--borda);background:var(--bg);color:var(--texto);font:inherit">
+    <textarea id="nvDescricao" placeholder="Cole aqui a descrição da vaga (opcional agora, dá pra colar depois)"></textarea>
+    <div class="acoes">
+      <button class="primario" id="nvSalvar">Salvar vaga</button>
+      <button id="nvCancelar">Cancelar</button>
+      <span class="msg" id="nvMsg"></span>
+    </div>
+  </div>
   <div class="filtros" id="abas"></div>
   <div class="filtros"><input type="search" id="busca" placeholder="Filtrar por título, empresa ou local"></div>
   <div id="lista"></div>
@@ -106,7 +118,7 @@ function cartao(v) {
       : `<details><summary>Descrição (${v.descricao.length} caracteres)</summary><p>${esc(v.descricao)}</p></details>`}
     ${analise(v.analise)}
     <div class="acoes">
-      <a href="${esc(v.link)}" target="_blank" rel="noopener"><button>Abrir vaga</button></a>
+      ${v.link.startsWith("manual://") ? "" : `<a href="${esc(v.link)}" target="_blank" rel="noopener"><button>Abrir vaga</button></a>`}
       <button class="primario" data-acao="gerar">${v.pdf ? "Gerar de novo" : (semDesc ? "Salvar e gerar currículo" : "Gerar currículo")}</button>
       ${v.pdf ? `<a href="/pdf/${encodeURIComponent(v.pdf)}" target="_blank"><button>Ver PDF</button></a>` : ""}
       ${v.status !== "candidatada" ? `<button data-acao="candidatada">Já me candidatei</button>` : ""}
@@ -153,6 +165,22 @@ $("#abas").addEventListener("click", e => {
   desenhar();
 });
 $("#busca").addEventListener("input", desenhar);
+
+$("#nova").addEventListener("click", () => { $("#formNova").hidden = !$("#formNova").hidden; $("#nvTitulo").focus(); });
+$("#nvCancelar").addEventListener("click", () => { $("#formNova").hidden = true; });
+$("#nvSalvar").addEventListener("click", async () => {
+  const msg = $("#nvMsg");
+  msg.className = "msg"; msg.textContent = "";
+  try {
+    await api("/api/vagas", {
+      titulo: $("#nvTitulo").value.trim(), empresa: $("#nvEmpresa").value.trim(),
+      local: $("#nvLocal").value.trim(), descricao: $("#nvDescricao").value.trim(),
+    });
+    $("#nvTitulo").value = $("#nvEmpresa").value = $("#nvLocal").value = $("#nvDescricao").value = "";
+    $("#formNova").hidden = true;
+    await carregar();
+  } catch (err) { msg.className = "msg erro"; msg.textContent = err.message; }
+});
 
 $("#coletar").addEventListener("click", async e => {
   const b = e.target; b.disabled = true; $("#aviso").className = "msg"; $("#aviso").textContent = "Buscando no Gmail, GitHub, Remotive, Arbeitnow e Himalayas…";

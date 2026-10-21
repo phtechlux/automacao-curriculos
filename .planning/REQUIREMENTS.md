@@ -34,8 +34,8 @@
 ## v2 — produto multiusuário (Kiwify)
 
 ### Entrada manual (substitui Gmail como caminho principal)
-- [ ] **ENT-01**: criar vaga direto no painel colando título, empresa e descrição — sem precisar de "coletar" antes
-- [ ] **ENT-02**: coleta por Gmail/fontes abertas continua disponível mas opcional, nunca bloqueia o uso
+- [x] **ENT-01**: criar vaga direto no painel colando título, empresa e descrição — sem precisar de "coletar" antes
+- [x] **ENT-02**: coleta por Gmail/fontes abertas continua disponível mas opcional, nunca bloqueia o uso
 
 ### Contas
 - [ ] **CTA-01**: cadastro e login do usuário

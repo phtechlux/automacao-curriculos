@@ -11,7 +11,7 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 ## Phases
 
 - [x] **Phase 1: Setup** - dependências, currículo base em YAML, testes rodando
-- [ ] **Phase 2: Entrada manual** - criar vaga colando descrição, sem depender de Gmail
+- [x] **Phase 2: Entrada manual** - criar vaga colando descrição, sem depender de Gmail
 - [ ] **Phase 3: IA** - adaptar o currículo à vaga via Claude, sem inventar, com custo medível
 - [ ] **Phase 4: PDF** - gerar o PDF ATS-friendly
 - [ ] **Phase 5: Contas** - cadastro/login, currículo base por conta, dados isolados
@@ -40,6 +40,7 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 2. Coleta por Gmail/fontes abertas continua funcionando, mas como opção, nunca obrigatória
 3. Testes cobrem a vaga manual sem rede
 **Notes**: o painel já aceita colar a *descrição* numa vaga existente (`/api/vagas/<id>/descricao`); falta permitir criar a vaga do zero, sem vir de uma coleta prévia.
+**Status**: Completo (2026-10-21)
 
 ### Phase 3: IA
 **Goal**: currículo adaptado e validado para uma vaga real, com custo por geração medível
@@ -120,7 +121,7 @@ assistida viram fases avançadas/futuras, não bloqueiam o lançamento.
 | Phase | Plans Complete | Status | Completed |
 |---|---|---|---|
 | 1. Setup | 1/1 | Complete | 2026-10-17 |
-| 2. Entrada manual | 0/? | Not started | - |
+| 2. Entrada manual | 1/1 | Complete | 2026-10-21 |
 | 3. IA | 0/? | Not started | - |
 | 4. PDF | 0/? | Not started | - |
 | 5. Contas | 0/? | Not started | - |

@@ -3,6 +3,7 @@
 Só escuta em 127.0.0.1. Nada é enviado: o painel gera o PDF e para."""
 import json
 import threading
+import uuid
 import webbrowser
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -66,6 +67,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if partes == ["api", "coletar"]:
                 return self._coletar(int(self._corpo().get("dias", 7)))
+            if partes == ["api", "vagas"]:
+                return self._criar(self._corpo())
             if len(partes) == 4 and partes[:2] == ["api", "vagas"] and (arq := _arquivo(partes[2])):
                 return self._acao(Vaga.carregar(arq), arq, partes[3], self._corpo())
             self._responder(404, {"erro": "não encontrado"})
@@ -85,6 +88,19 @@ class Handler(BaseHTTPRequestHandler):
             except Exception:  # sem token/rede: segue só com as fontes abertas
                 gmail = []
         self._responder(200, {"novas": len(abertas) + len(gmail)})
+
+    def _criar(self, corpo: dict):
+        """ENT-01: cria uma vaga colando os dados direto, sem precisar coletar antes."""
+        titulo = str(corpo.get("titulo", "")).strip()
+        if not titulo:
+            return self._responder(400, {"erro": "título é obrigatório"})
+        vaga = Vaga(
+            titulo=titulo, link=f"manual://{uuid.uuid4()}", fonte="manual",
+            empresa=str(corpo.get("empresa", "")).strip(), local=str(corpo.get("local", "")).strip(),
+            descricao=str(corpo.get("descricao", "")).strip(),
+        )
+        vaga.salvar(PASTA_VAGAS)
+        self._responder(200, _json_vaga(vaga))
 
     def _acao(self, vaga: Vaga, arq: Path, acao: str, corpo: dict):
         if acao == "descricao":

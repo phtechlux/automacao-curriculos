@@ -3,10 +3,10 @@ gsd_state_version: '1.0'
 status: planning
 progress:
   total_phases: 10
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 10
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
+  percent: 20
 ---
 <!-- STATE-MD-SCHEMA:END:frontmatter -->
 
@@ -17,16 +17,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-21)
 
 **Core value:** Um currículo adaptado e verdadeiro por vaga, sem trabalho manual: a IA nunca inventa fatos.
-**Current focus:** Phase 2 — Entrada manual (pivô: produto multiusuário, lançamento na Kiwify, sem depender de Gmail)
+**Current focus:** Phase 3 — IA (rodar sempre via ANTHROPIC_API_KEY em produção, medir custo por geração)
 
 ## Current Position
 
-Phase: 2 of 10 (Entrada manual)
+Phase: 3 of 10 (IA)
 Plan: 0 of ? in current phase
 Status: Ready to plan
-Last activity: 2026-10-21 — pivô para produto pago (Kiwify, fluxo "colar vaga" sem Gmail); roadmap e requirements reescritos
+Last activity: 2026-10-21 — Fase 2 concluída: botão "Nova vaga" no painel cria vaga direto (título/empresa/local/descrição), sem depender de coleta prévia nem de Gmail (painel.py `_criar`, endpoint `POST /api/vagas`)
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Accumulated Context
 
@@ -40,7 +40,6 @@ Decisions are logged in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-- Fase 2: permitir criar vaga do zero colando título/empresa/descrição no painel (hoje só existe colar *descrição* numa vaga já coletada)
 - Fase 3: decidir preço dos créditos a partir do custo real por geração via `ANTHROPIC_API_KEY`
 
 ### Blockers/Concerns
@@ -52,5 +51,5 @@ Decisions are logged in PROJECT.md Key Decisions table.
 ## Session Continuity
 
 Last session: 2026-10-21
-Stopped at: planejamento do pivô concluído (PROJECT/REQUIREMENTS/ROADMAP/STATE atualizados); próximo passo é codar a Fase 2 (criar vaga colando descrição, sem precisar de coleta prévia)
+Stopped at: Fase 2 codada (sem testes, conforme combinado — testes ficam para o fim do projeto); próximo passo é Fase 3 (garantir IA sempre via API key em produção)
 Resume file: None
