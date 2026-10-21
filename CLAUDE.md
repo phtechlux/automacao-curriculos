@@ -1,8 +1,10 @@
 # Automação de Currículos
 
-Projeto pessoal. Sistema semi-automatizado que lê alertas de vagas do Gmail, usa a API do Claude para adaptar um currículo base a cada vaga, gera o PDF e deixa a candidatura pronta para eu revisar e enviar.
+Começou como projeto pessoal: sistema que lê alertas de vagas do Gmail, usa a API do Claude para adaptar um currículo base a cada vaga, gera o PDF e deixa a candidatura pronta para eu revisar e enviar.
 
-Foco: vagas remotas e no exterior (Visa Sponsorship, Relocation, Remote Worldwide).
+Desde 2026-10-21, em paralelo ao uso pessoal, virou também um **produto pago multiusuário** a ser lançado na Kiwify: qualquer pessoa cola seu currículo base e a descrição da vaga (sem precisar de Gmail) e recebe o PDF adaptado. Ver `.planning/PROJECT.md` → "Produto (venda)" e `.planning/ROADMAP.md` para as fases do produto.
+
+Foco (uso pessoal): vagas remotas e no exterior (Visa Sponsorship, Relocation, Remote Worldwide).
 
 Arquitetura completa: [docs/arquitetura.md](docs/arquitetura.md)
 
